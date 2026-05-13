@@ -1,0 +1,14 @@
+{
+  "name": "getyourkicks-bot",
+  "version": "1.0.0",
+  "description": "Bot che forwarda offerte da Discord a Telegram e Soleback",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "node-fetch": "^2.7.0",
+    "form-data": "^4.0.0"
+  }
+}
