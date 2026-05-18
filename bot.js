@@ -116,13 +116,18 @@ async function publishToTelegram(embed, message) {
             }
         }
 
-        if (embed.footer) {
-            text += `\n_${escapeMarkdown(embed.footer.text)}_`;
+        // Footer rimosso intenzionalmente
+
+        // Cerca l'immagine: prima negli allegati, poi nell'embed
+        let imageUrl = null;
+        if (message.attachments.size > 0) {
+            imageUrl = message.attachments.first().url;
+        } else if (embed.image && embed.image.url && !embed.image.url.startsWith('attachment://')) {
+            imageUrl = embed.image.url;
         }
 
-        if (message.attachments.size > 0) {
-            const attachment = message.attachments.first();
-            const imageResponse = await fetch(attachment.url);
+        if (imageUrl) {
+            const imageResponse = await fetch(imageUrl);
             const imageBuffer = await imageResponse.buffer();
 
             const FormData = require('form-data');
@@ -169,7 +174,8 @@ async function publishToTelegram(embed, message) {
 
 function escapeMarkdown(text) {
     if (!text) return '';
-    return text.replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
+    // Escape solo i caratteri che rompono il Markdown di Telegram (non il punto)
+    return text.replace(/[_*`[\]]/g, '\\$&');
 }
 
 client.login(DISCORD_BOT_TOKEN);
