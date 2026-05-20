@@ -57,31 +57,31 @@ client.on('messageCreate', async (message) => {
 
 async function publishToSolebackDiscord(message, embed) {
     try {
-        const FormData = require('form-data');
-        const formData = new FormData();
-        const payload = { embeds: [embed.toJSON()] };
+        const embedJson = embed.toJSON();
 
+        // Usa direttamente l'URL dell'immagine già caricata da Discord (CDN)
         if (message.attachments.size > 0) {
-            const attachment = message.attachments.first();
-            const imageResponse = await fetch(attachment.url);
-            const imageBuffer = await imageResponse.buffer();
-            formData.append('file', imageBuffer, { filename: 'screenshot.png', contentType: 'image/png' });
-            payload.embeds[0].image = { url: 'attachment://screenshot.png' };
+            embedJson.image = { url: message.attachments.first().url };
         }
 
-        formData.append('payload_json', JSON.stringify(payload));
+        const payload = { embeds: [embedJson] };
+
+        // Log dettagliato per debug
+        console.log(`📤 Invio a Soleback webhook. URL: ${WEBHOOK_SOLEBACK.substring(0, 60)}...`);
+        console.log(`📤 Payload: ${JSON.stringify(payload).substring(0, 200)}...`);
 
         const response = await fetch(WEBHOOK_SOLEBACK, {
             method: 'POST',
-            body: formData,
-            headers: formData.getHeaders()
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
         });
 
+        const responseText = await response.text();
+
         if (response.ok) {
-            console.log(`✅ Pubblicato su Soleback Discord`);
+            console.log(`✅ Pubblicato su Soleback Discord (status ${response.status})`);
         } else {
-            const err = await response.text();
-            console.error(`❌ Errore Soleback Discord: ${response.status} - ${err}`);
+            console.error(`❌ Errore Soleback Discord: ${response.status} - ${responseText}`);
         }
     } catch (error) {
         console.error(`❌ Errore pubblicazione Soleback Discord:`, error);
